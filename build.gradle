@@ -26,7 +26,14 @@ minecraft {
     runDir = "run"
 }
 
+repositories {
+    maven {
+        url 'http://maven.tterrag.com/'
+    }
+}
+
 dependencies {
+    compile "exnihilo:Ex-Nihilo:1.38-49:deobf"
 }
 
 processResources
