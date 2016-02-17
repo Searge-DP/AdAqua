@@ -66,7 +66,7 @@ public class AdAqua {
         config = new Configuration(event.getSuggestedConfigurationFile());
         config.load();
 
-        if(config.getBoolean("Enable Wooden Crucible", "general", true, "Set this to false to disable the recipe for the wooden crucible.")) {
+        if (config.getBoolean("Enable Wooden Crucible", "general", true, "Set this to false to disable the recipe for the wooden crucible.")) {
             GameRegistry.addRecipe(new ShapedOreRecipe(blockWoodenCrucible, "W W", "W W", "WSW", 'W', "logWood", 'S', "slabWood"));
         }
 
@@ -78,19 +78,19 @@ public class AdAqua {
         proxy.postInit(event);
 
         // Add additional meltables to Crucible
-        String[] meltableWaterBlockList = config.getStringList("Meltable Water Blocks", "general", new String[] {
+        String[] meltableWaterBlockList = config.getStringList("Meltable Water Blocks", "general", new String[]{
                 "ore:treeLeaves",
                 "minecraft:cactus"
         }, "Here you can specify additional blocks that will melt into water. Format: modid:name@meta, meta can be wildcard *, modid can be ore for OreDictionary");
         for (String meltable : meltableWaterBlockList) {
             Matcher matcher = ITEMSTACK.matcher(meltable);
             if (matcher.find()) {
-                if(matcher.group(1).startsWith("ore:") && matcher.group(1).length() > 4) {
+                if (matcher.group(1).startsWith("ore:") && matcher.group(1).length() > 4) {
                     String oreName = matcher.group(1).substring(4);
                     List<ItemStack> itemStacks = OreDictionary.getOres(oreName, false);
-                    if(!itemStacks.isEmpty()) {
-                        for(ItemStack itemStack : itemStacks) {
-                            if(itemStack.getItem() instanceof ItemBlock) {
+                    if (!itemStacks.isEmpty()) {
+                        for (ItemStack itemStack : itemStacks) {
+                            if (itemStack.getItem() instanceof ItemBlock) {
                                 CrucibleRegistry.register(((ItemBlock) itemStack.getItem()).field_150939_a, itemStack.getItem().getMetadata(itemStack.getItemDamage()), 2000f, FluidRegistry.WATER, 250f, ((ItemBlock) itemStack.getItem()).field_150939_a);
                             } else {
                                 logger.warn("Skipping ore dictionary meltable water block due to not being a block: " + itemStack.getUnlocalizedName());
@@ -117,18 +117,18 @@ public class AdAqua {
             }
         }
 
-        String[] meltableWaterItemList = config.getStringList("Meltable Water Items", "general", new String[] {
+        String[] meltableWaterItemList = config.getStringList("Meltable Water Items", "general", new String[]{
                 "ore:treeSapling",
                 "minecraft:apple"
         }, "Here you can specify additional items that will melt into water. Items only result in half the amount of water. Format: modid:name@meta, meta can be wildcard *, modid can be ore for OreDictionary");
-        for(String meltable : meltableWaterItemList) {
+        for (String meltable : meltableWaterItemList) {
             Matcher matcher = ITEMSTACK.matcher(meltable);
             if (matcher.find()) {
-                if(matcher.group(1).startsWith("ore:") && matcher.group(1).length() > 4) {
+                if (matcher.group(1).startsWith("ore:") && matcher.group(1).length() > 4) {
                     String oreName = matcher.group(1).substring(4);
                     List<ItemStack> itemStacks = OreDictionary.getOres(oreName, false);
-                    if(!itemStacks.isEmpty()) {
-                        for(ItemStack itemStack : itemStacks) {
+                    if (!itemStacks.isEmpty()) {
+                        for (ItemStack itemStack : itemStacks) {
                             meltableWaterItems.add(itemStack);
                         }
                     } else {
@@ -154,36 +154,38 @@ public class AdAqua {
 
         // Dummy Entry. Yes, portals will make water. Yes, I'm lazy. Don't tell anyone.
         CrucibleRegistry.register(Blocks.portal, 0, 1000f, FluidRegistry.WATER, 125f, Blocks.leaves);
+
+        config.save();
     }
 
     @SubscribeEvent
     public void onInteract(PlayerInteractEvent event) {
-        if(event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+        if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             TileEntity tileEntity = event.world.getTileEntity(event.x, event.y, event.z);
-            if(tileEntity instanceof TileEntityCrucible) {
+            if (tileEntity instanceof TileEntityCrucible) {
                 ItemStack heldItem = event.entityPlayer.getHeldItem();
-                if(heldItem != null) {
-                    if(heldItem.getItem() == Item.getItemFromBlock(Blocks.portal)) {
+                if (heldItem != null) {
+                    if (heldItem.getItem() == Item.getItemFromBlock(Blocks.portal)) {
                         // You wish.
                         event.setCanceled(true);
                         return;
                     }
-                    if(heldItem.getItem() instanceof ItemBlock) {
+                    if (heldItem.getItem() instanceof ItemBlock) {
                         Block heldBlock = ((ItemBlock) heldItem.getItem()).field_150939_a;
-                        if(CrucibleRegistry.containsItem(heldBlock, OreDictionary.WILDCARD_VALUE)) {
-                            if(((TileEntityCrucible) tileEntity).addItem(new ItemStack(heldBlock, 1, OreDictionary.WILDCARD_VALUE))) {
-                                if(!event.entityPlayer.capabilities.isCreativeMode) {
+                        if (CrucibleRegistry.containsItem(heldBlock, OreDictionary.WILDCARD_VALUE)) {
+                            if (((TileEntityCrucible) tileEntity).addItem(new ItemStack(heldBlock, 1, OreDictionary.WILDCARD_VALUE))) {
+                                if (!event.entityPlayer.capabilities.isCreativeMode) {
                                     heldItem.stackSize--;
                                 }
                             }
+                            return;
                         }
-                    } else {
-                        for (ItemStack itemStack : meltableWaterItems) {
-                            if ((itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE && itemStack.getItem() == heldItem.getItem()) || itemStack.isItemEqual(heldItem)) {
-                                if (((TileEntityCrucible) tileEntity).addItem(new ItemStack(Item.getItemFromBlock(Blocks.portal), 1))) {
-                                    if (!event.entityPlayer.capabilities.isCreativeMode) {
-                                        heldItem.stackSize--;
-                                    }
+                    }
+                    for (ItemStack itemStack : meltableWaterItems) {
+                        if ((itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE && itemStack.getItem() == heldItem.getItem()) || itemStack.isItemEqual(heldItem)) {
+                            if (((TileEntityCrucible) tileEntity).addItem(new ItemStack(Item.getItemFromBlock(Blocks.portal), 1))) {
+                                if (!event.entityPlayer.capabilities.isCreativeMode) {
+                                    heldItem.stackSize--;
                                 }
                             }
                         }

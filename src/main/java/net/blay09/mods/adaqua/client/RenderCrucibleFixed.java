@@ -4,10 +4,13 @@ import exnihilo.blocks.models.ModelCrucible;
 import exnihilo.blocks.models.ModelCrucibleInternal;
 import exnihilo.blocks.tileentities.TileEntityCrucible;
 import exnihilo.registries.ColorRegistry;
+import exnihilo.registries.CrucibleRegistry;
 import exnihilo.registries.helpers.Color;
+import exnihilo.registries.helpers.Meltable;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
@@ -100,9 +103,16 @@ public class RenderCrucibleFixed extends TileEntitySpecialRenderer {
         }
         try {
             Block block = (Block) fieldContent.get(tileEntity);
-            return new Color(block.getRenderColor(fieldContentMeta.getInt(tileEntity)));
+            int meta = fieldContentMeta.getInt(tileEntity);
+            if(block != null) {
+                Meltable meltable = CrucibleRegistry.getItem(block, meta);
+                if(meltable != null) {
+                    return new Color(meltable.appearance.getBlockColor());
+                }
+            }
         } catch (IllegalAccessException e) {
-            return ColorRegistry.color("white");
+            fixColor = false;
         }
+        return ColorRegistry.color("white");
     }
 }
