@@ -1,12 +1,14 @@
 package net.blay09.mods.adaqua;
 
 import com.google.common.collect.Lists;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import exnihilo.blocks.BlockCrucible;
 import exnihilo.blocks.tileentities.TileEntityCrucible;
@@ -14,6 +16,8 @@ import exnihilo.registries.CrucibleRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.event.ClickEvent;
+import net.minecraft.event.HoverEvent;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -21,6 +25,8 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -59,6 +65,7 @@ public class AdAqua {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
+        FMLCommonHandler.instance().bus().register(this);
 
         blockWoodenCrucible = new BlockWoodenCrucible();
         GameRegistry.registerBlock(blockWoodenCrucible, MOD_ID + ".woodenCrucible");
@@ -156,6 +163,15 @@ public class AdAqua {
         CrucibleRegistry.register(Blocks.portal, 0, 1000f, FluidRegistry.WATER, 125f, Blocks.leaves);
 
         config.save();
+    }
+
+    @SubscribeEvent
+    public void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        event.player.addChatComponentMessage(
+                new ChatComponentText("Ad Aqua has been discontinued in favor of Ex Compressum. Ex Compressum adds a better version of the wooden crucible among other cool things that help reduce grind in skyblock maps.")
+                        .setChatStyle(new ChatStyle()
+                                .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("\u00a7eClick here to open Ex Compressum")))
+                                .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "http://minecraft.curseforge.com/projects/ex-compressum"))));
     }
 
     @SubscribeEvent
